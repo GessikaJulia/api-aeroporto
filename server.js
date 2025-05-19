@@ -25,3 +25,7 @@ mongoose.connect(process.env.MONGO_URI, {
   console.log('MongoDB conectado');
   app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
 }).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
+
+
+//- permite criar dois voos com o mesmo numero
+//- encerrou o voo e o portao não ficou disponivel 

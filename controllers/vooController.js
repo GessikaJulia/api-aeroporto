@@ -4,6 +4,12 @@ const Portao = require('../models/portao');
 
 exports.create = async (req, res) => {
   try {
+    const { numeroVoo } = req.body;
+    const vooExistente = await Voo.findOne({ numeroVoo });
+    if (vooExistente) {
+      return res.status(400).json({ message: 'Já existe um voo com este número' });
+    }
+    
     const voo = new Voo(req.body);
     await voo.save();
     res.status(201).json(voo);
@@ -38,8 +44,11 @@ exports.update = async (req, res) => {
 
     if (!voo) return res.status(404).json({ message: 'Voo não encontrado' });
 
-    if (updates.status === 'concluído' && voo.portaoId) {
-      await Portao.findByIdAndUpdate(voo.portaoId, { disponivel: true });
+    if (updates.status === 'finalizado') {
+      if (voo.portaoId) {
+        await Portao.findByIdAndUpdate(voo.portaoId, { disponivel: true });
+        updates.portaoId = null;
+      }
     }
 
     const updatedVoo = await Voo.findByIdAndUpdate(req.params.id, updates, { new: true });
