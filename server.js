@@ -9,14 +9,28 @@ app.use(cors());
 
 const port = process.env.PORT || 3000;
 
+// rotas
 const passageiroRoutes = require('./routes/passageiro');
 const vooRoutes = require('./routes/voo');
 const portaoRoutes = require('./routes/portao');
+const funcionarioRoutes = require('./routes/funcionario');
 
-app.use('/passageiros', passageiroRoutes);
-app.use('/voos', vooRoutes);
-app.use('/portoes', portaoRoutes);
+const { autenticar, somenteAdmin } = require('./middlewares/auth');
 
+// usar rotas com proteção
+app.use('/funcionarios', funcionarioRoutes);
+app.use('/passageiros', autenticar, passageiroRoutes);
+app.use('/portoes', autenticar, portaoRoutes);
+app.use('/voos', autenticar, vooRoutes);
+
+// proteger alterações apenas para admin
+const passageiro = require('./controllers/passageiroController');
+const portao = require('./controllers/portaoController');
+const voo = require('./controllers/vooController');
+
+app.post('/passageiros', autenticar, passageiro.create);
+app.post('/portoes', autenticar, somenteAdmin, portao.create);
+app.post('/voos', autenticar, somenteAdmin, voo.create);
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -25,7 +39,3 @@ mongoose.connect(process.env.MONGO_URI, {
   console.log('MongoDB conectado');
   app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
 }).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
-
-
-//- permite criar dois voos com o mesmo numero
-//- encerrou o voo e o portao não ficou disponivel 
