@@ -1,8 +1,10 @@
+// routes/funcionarioRoutes.js
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/funcionarioController');
+const funcionarioController = require('../controllers/funcionarioController');
 
-router.post('/cadastrar', controller.cadastrar);
-router.post('/login', controller.login);
+// Rotas públicas
+router.post('/register', funcionarioController.create);
+router.post('/login', funcionarioController.login);
 
 module.exports = router;

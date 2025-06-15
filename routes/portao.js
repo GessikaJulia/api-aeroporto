@@ -1,12 +1,19 @@
+// routes/portaoRoutes.js
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/portaoController');
+const portaoController = require('../controllers/portaoController');
+const { autenticar, somenteAdmin } = require('../middlewares/auth');
 
-router.post('/', controller.create);
-router.get('/', controller.getAll);
-router.get('/:id', controller.getById);
-router.patch('/:id/disponibilidade', controller.updateDisponibilidade);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.delete);
+// Rotas protegidas
+
+// Qualquer funcionário autenticado pode ver os portões
+router.get('/', autenticar, portaoController.getAll);
+router.get('/:id', autenticar, portaoController.getById);
+
+// Apenas administradores podem criar, alterar e deletar portões
+router.post('/', autenticar, somenteAdmin, portaoController.create);
+router.put('/:id', autenticar, somenteAdmin, portaoController.update);
+router.patch('/:id/disponibilidade', autenticar, somenteAdmin, portaoController.updateDisponibilidade);
+router.delete('/:id', autenticar, somenteAdmin, portaoController.delete);
 
 module.exports = router;

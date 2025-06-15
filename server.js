@@ -1,41 +1,36 @@
+// server.js
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+
+// Importar as rotas
+const funcionarioRoutes = require('./routes/funcionarioRoutes');
+const vooRoutes = require('./routes/vooRoutes');
+const portaoRoutes = require('./routes/portaoRoutes');
+const passageiroRoutes = require('./routes/passageiroRoutes');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middlewares
 app.use(express.json());
-app.use(cors());
 
-const port = process.env.PORT || 3000;
+// Conexão com o MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Conectado ao MongoDB...'))
+  .catch(err => console.error('Não foi possível conectar ao MongoDB...', err));
 
-// rotas
-const passageiroRoutes = require('./routes/passageiro');
-const vooRoutes = require('./routes/voo');
-const portaoRoutes = require('./routes/portao');
-const funcionarioRoutes = require('./routes/funcionario');
+// Usar as rotas
+app.use('/api/funcionarios', funcionarioRoutes);
+app.use('/api/voos', vooRoutes);
+app.use('/api/portoes', portaoRoutes);
+app.use('/api/passageiros', passageiroRoutes);
 
-const { autenticar, somenteAdmin } = require('./middlewares/auth');
+// Rota de teste
+app.get('/', (req, res) => {
+  res.send('API do Aeroporto no ar!');
+});
 
-// usar rotas com proteção
-app.use('/funcionarios', funcionarioRoutes);
-app.use('/passageiros', autenticar, passageiroRoutes);
-app.use('/portoes', autenticar, portaoRoutes);
-app.use('/voos', autenticar, vooRoutes);
-
-// proteger alterações apenas para admin
-const passageiro = require('./controllers/passageiroController');
-const portao = require('./controllers/portaoController');
-const voo = require('./controllers/vooController');
-
-app.post('/passageiros', autenticar, passageiro.create);
-app.post('/portoes', autenticar, somenteAdmin, portao.create);
-app.post('/voos', autenticar, somenteAdmin, voo.create);
-
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('MongoDB conectado');
-  app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
-}).catch(err => console.error('Erro ao conectar ao MongoDB:', err));
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
